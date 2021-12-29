@@ -30,7 +30,7 @@
                     opts->flags)
           args (append flags assets)]
     (from gh:cli
-      (-> ($ echo gh release create $tag & $args)
+      (-> ($ gh release create $tag & $args)
           (with-env-var :GITHUB_TOKEN *access-token*)
           (response-from :stdout :unix-table)))))
 
