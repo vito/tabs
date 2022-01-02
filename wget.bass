@@ -1,5 +1,5 @@
 (defn wget [url filename]
   (path
-    (from "alpine"
+    (from (linux/alpine)
       ($ wget $url -O $filename))
     filename))

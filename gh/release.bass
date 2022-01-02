@@ -1,17 +1,11 @@
-(provide [create-opts-schema create!]
+(provide [create!]
+  (use (*dir*../gh))
+
   (def *repo*
     (next *stdin*))
 
   (def *access-token*
     (next *stdin*))
-
-  (def gh
-    (load (*dir*/../gh)))
-
-  (def create-opts-schema
-    {:title string?
-     :notes string?
-     :notes-file path?})
 
   (defn opts->flags [opts]
     (defn append-flag [fs k v]

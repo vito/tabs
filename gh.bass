@@ -1,14 +1,13 @@
 (provide [cli]
-  (def dur
-    (load (.durations)))
+  (use (.durations)
+       (*dir*/wget))
 
-  (import (load (*dir*/wget))
-          wget)
-
-  (def gh-deb-url
-    "https://github.com/cli/cli/releases/download/v2.3.0/gh_2.3.0_linux_amd64.deb")
+  (def gh-deb
+    (wget:wget
+      "https://github.com/cli/cli/releases/download/v2.4.0/gh_2.4.0_linux_amd64.deb"
+      ./gh.deb))
 
   (def cli
-    (from "ubuntu"
-      (with-label ($ apt update) :at (dur:daily))
-      ($ apt -y install (wget gh-deb-url ./gh.deb)))))
+    (from (linux/ubuntu)
+      ($ apt update)
+      ($ apt -y install $gh-deb))))
