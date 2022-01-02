@@ -1,13 +1,11 @@
 (provide [cli]
-  (use (.durations)
-       (*dir*/wget))
+  (use (*dir*/wget))
 
-  (def gh-deb
+  (def gh-tgz
     (wget:wget
-      "https://github.com/cli/cli/releases/download/v2.4.0/gh_2.4.0_linux_amd64.deb"
-      ./gh.deb))
+      "https://github.com/cli/cli/releases/download/v2.4.0/gh_2.4.0_linux_amd64.tar.gz"
+      ./gh.tgz))
 
   (def cli
-    (from (linux/ubuntu)
-      ($ apt update)
-      ($ apt -y install $gh-deb))))
+    (from (linux/alpine)
+      ($ tar -vzxf $gh-tgz -C /usr/local --strip-components=1))))
