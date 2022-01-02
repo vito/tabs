@@ -1,5 +1,5 @@
 (provide [create!]
-  (use (*dir*../gh))
+  (use (*dir*/../gh))
 
   (def *repo*
     (next *stdin*))
