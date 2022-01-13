@@ -47,7 +47,7 @@
     ; An optional cursor version to check from may be provided.
     (defn check-every [interval & optional-version]
       (let [version (case optional-version [] null (v & _) v)]
-        (apply stream (next (run (check-wl version interval))))))
+        (apply stream (next (read (check-wl version interval) :json)))))
 
     ; fetch a version of the resource
     (defn get [version & params]
@@ -55,7 +55,7 @@
 
     ; create or update a version of the resource
     (defn put params
-      (next (run (put-wl (list->scope params)))))
+      (next (read (put-wl (list->scope params)) :json)))
 
     (def image
       (if (symbol? type)
@@ -65,7 +65,6 @@
     (defn check-wl [version interval]
       (-> (/opt/resource/check {:source source :version version})
           (in-image image)
-          (response-from :stdout)
 
           ; check's purpose is to find new values over time; it shouldn't be
           ; cached forever
@@ -74,14 +73,12 @@
     (defn get-wl [version params]
       (-> (/opt/resource/in {:source source :version version :params params})
           (with-args ./)
-          (in-image image)
-          (response-from :stdout)))
+          (in-image image)))
 
     (defn put-wl [params]
       (-> (/opt/resource/out {:source source :params params})
           (with-args ./)
           (in-image image)
-          (response-from :stdout)
 
           ; don't cache put thunks forever; what if the external state
           ; changed and needs to be re-applied?
@@ -116,7 +113,7 @@
                             output-configs)
           outputs (list->scope (apply append output-pairs))]
       {:outputs outputs
-       :result (run thunk)}))
+       :result (succeeds? thunk)}))
 
   (defn task->thunk [config opts]
     (let [platform-name (string->symbol (-> config :platform))
@@ -153,8 +150,7 @@
           (with-env env)
           (on-platform platform)
           (in-image image)
-          (with-insecure privileged)
-          (response-from :exit))))
+          (with-insecure privileged))))
 
   (defn get-latest-image-resource [resource & kwargs]
     (let [check (resource:check-every *config*:image-check-interval)]

@@ -1,35 +1,22 @@
-(provide [create!]
+(provide [auth]
   (use (*dir*/../gh))
 
-  (def *repo*
-    (next *stdin*))
+  (defn auth [repo token]
+    (defn create [tag target assets opts]
+      (let [flags (-> {:repo repo
+                       :target target
+                       :title tag}
+                      (merge opts)
+                      gh:opts->flags)
+            args (append flags assets)]
+      (from gh:cli
+        (-> ($ gh release create $tag & $args)
+            (with-env {:GITHUB_TOKEN token})))))
 
-  (def *access-token*
-    (next *stdin*))
+    (defn create! args
+      (-> (apply create args)
+          (read :unix-table)
+          next
+          first))
 
-  (defn opts->flags [opts]
-    (defn append-flag [fs k v]
-      (let [flag (str "--" k)]
-        (if (boolean? v)
-          (conj fs flag)
-          (conj fs flag v))))
-
-    (reduce-kv append-flag [] opts))
-
-  (defn create [tag target assets opts]
-    (let [flags (-> {:repo *repo*
-                     :target target
-                     :title tag}
-                    (merge opts)
-                    opts->flags)
-          args (append flags assets)]
-    (from gh:cli
-      (-> ($ gh release create $tag & $args)
-          (with-env-var :GITHUB_TOKEN *access-token*)
-          (response-from :stdout :unix-table)))))
-
-  (defn create! args
-    (-> (apply create args)
-        run
-        next
-        first)))
+    {:create! create!}))

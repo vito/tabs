@@ -1,10 +1,19 @@
-(provide [cli]
+(provide [cli opts->flags]
   (use (*dir*/wget))
 
   (def gh-tgz
     (wget:wget
       "https://github.com/cli/cli/releases/download/v2.4.0/gh_2.4.0_linux_amd64.tar.gz"
       ./gh.tgz))
+
+  (defn append-flag [fs k v]
+    (let [flag (str "--" k)]
+      (if (boolean? v)
+        (conj fs flag)
+        (conj fs flag v))))
+
+  (defn opts->flags [opts]
+    (reduce-kv append-flag [] opts))
 
   (def cli
     (from (linux/alpine)
