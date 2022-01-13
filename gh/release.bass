@@ -1,5 +1,6 @@
 (provide [auth]
-  (use (*dir*/../gh))
+  (import (load (*dir*/../gh))
+          opts->flags)
 
   (defn auth [repo token]
     (defn create [tag target assets opts]
@@ -7,7 +8,7 @@
                        :target target
                        :title tag}
                       (merge opts)
-                      gh:opts->flags)
+                      opts->flags)
             args (append flags assets)]
       (from gh:cli
         (-> ($ gh release create $tag & $args)
