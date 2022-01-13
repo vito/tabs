@@ -1,6 +1,6 @@
 (provide [auth]
-  (import (load (*dir*/../gh))
-          opts->flags)
+  (use (*dir*/../gh))
+  (import gh opts->flags)
 
   (defn auth [repo token]
     (defn create [tag target assets opts]
