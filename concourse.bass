@@ -51,7 +51,7 @@
 
     ; fetch a version of the resource
     (defn get [version & params]
-      (path (get-wl version (list->scope params)) ./))
+      (subpath (get-wl version (list->scope params)) ./))
 
     ; create or update a version of the resource
     (defn put params
@@ -109,7 +109,7 @@
                               (let [name (:name output)
                                     src (:path output name)]
                                 [(string->symbol name)
-                                 (path thunk (string->dir src))]))
+                                 (subpath thunk (string->dir src))]))
                             output-configs)
           outputs (list->scope (apply append output-pairs))]
       {:outputs outputs
