@@ -37,7 +37,7 @@
   ; If type is a keyword, it is mapped to an image via :types in the module
   ; configuration.
   ;
-  ; Otherwise, it is passed along to `in-image`.
+  ; Otherwise, it is passed along to `with-image`.
   (defn resource [type source]
     (defn check optional-version
       (check-every *config*:check-interval & optional-version))
@@ -64,7 +64,7 @@
 
     (defn check-wl [version interval]
       (-> (/opt/resource/check {:source source :version version})
-          (in-image image)
+          (with-image image)
 
           ; check's purpose is to find new values over time; it shouldn't be
           ; cached forever
@@ -73,12 +73,12 @@
     (defn get-wl [version params]
       (-> (/opt/resource/in {:source source :version version :params params})
           (with-args ./)
-          (in-image image)))
+          (with-image image)))
 
     (defn put-wl [params]
       (-> (/opt/resource/out {:source source :params params})
           (with-args ./)
-          (in-image image)
+          (with-image image)
 
           ; don't cache put thunks forever; what if the external state
           ; changed and needs to be re-applied?
@@ -115,6 +115,9 @@
       {:outputs outputs
        :result (succeeds? thunk)}))
 
+  (defn with-mounts [thunk mounts]
+    (foldl (fn [t m] (with-mount t m:source m:target)) thunk mounts))
+
   (defn task->thunk [config opts]
     (let [platform-name (string->symbol (-> config :platform))
           platform (-> *config* :platforms platform-name)
@@ -145,11 +148,10 @@
                          (merge configured-params provided-params))]
       (-> (run-path)
           (with-args & run-args)
-          (in-dir run-dir)
+          (with-dir run-dir)
           (with-mounts mounts)
           (with-env env)
-          (on-platform platform)
-          (in-image image)
+          (with-image image)
           (with-insecure privileged))))
 
   (defn get-latest-image-resource [resource & kwargs]
