@@ -9,7 +9,9 @@
   (defn append-flag [fs k v]
     (let [flag (str "--" k)]
       (if (boolean? v)
-        (conj fs flag)
+        (if v
+          (conj fs flag)
+          fs)
         (conj fs flag v))))
 
   (defn opts->flags [opts]
