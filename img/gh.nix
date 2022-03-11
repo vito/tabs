@@ -4,6 +4,7 @@ pkgs.callPackage ./oci.nix {
   image = pkgs.dockerTools.streamLayeredImage {
     name = "gh";
     contents = with pkgs; [
+      busybox
       gh
     ];
     config = {

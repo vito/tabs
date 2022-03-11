@@ -3,6 +3,19 @@
   (import gh opts->flags)
 
   (defn auth [repo token]
+    (def authed-image
+      (from gh:cli
+        (if (empty? token)
+          ($ gh auth login) ; interactive
+          (-> ($ sh -c "gh auth login --with-token < /token")
+              (with-mount (mask token :github-token) /token)))))
+
+    (defn assets [tag]
+      (fn [path]
+        (-> ($ gh release download -R $repo (path-name tag) -p (path-name path))
+            (with-image authed-image)
+            (subpath path))))
+
     (defn create [tag target assets opts]
       (let [flags (-> {:repo repo
                        :target target
@@ -10,9 +23,8 @@
                       (merge opts)
                       opts->flags)
             args (append flags assets)]
-      (from gh:cli
         (-> ($ gh release create $tag & $args)
-            (with-env {:GITHUB_TOKEN token})))))
+            (with-image authed-image))))
 
     (defn create! args
       (-> (apply create args)
@@ -20,4 +32,12 @@
           next
           first))
 
-    {:create! create!}))
+    {:create! create!
+     :assets assets}))
+
+(defn main []
+  (let [bass (auth "vito/bass" "")]
+    (run
+      (from (linux/alpine)
+        ($ tar -xzf bass:assets/v0.1.1/bass.linux-amd64.tgz -C /usr/local/bin/)
+        ($ bass --version)))))
