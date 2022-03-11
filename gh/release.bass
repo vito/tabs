@@ -5,10 +5,10 @@
   (defn auth [repo token]
     (def authed-image
       (from gh:cli
-        (if (empty? token)
+        (if (null? token)
           ($ gh auth login) ; interactive
           (-> ($ sh -c "gh auth login --with-token < /token")
-              (with-mount (mask token :github-token) /token)))))
+              (with-mount token /token)))))
 
     (defn assets [tag]
       (fn [path]
@@ -36,7 +36,7 @@
      :assets assets}))
 
 (defn main []
-  (let [bass (auth "vito/bass" "")]
+  (let [bass (auth "vito/bass" null)]
     (run
       (from (linux/alpine)
         ($ tar -xzf bass:assets/v0.1.1/bass.linux-amd64.tgz -C /usr/local/bin/)
