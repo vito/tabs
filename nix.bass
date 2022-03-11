@@ -1,0 +1,44 @@
+(provide [build]
+  (use (.time))
+
+  (def *config*
+    (merge
+      (next *stdin* {})
+      {:update-every time:day}))
+
+  ; builds nix-file and returns its ./result as a thunk path
+  ;
+  ; Runs nix-channel --update daily by default. An alternative interval may be
+  ; specified as {:update-every} on stdin.
+  ;
+  ; The context is passed separately in case the nix-file needs to include
+  ; other files within it. The nix-build command is invoked with context/path.
+  (defn build [context nix-file path]
+    (subpath
+      (from (linux/nixos/nix)
+        ; daily updates
+        (-> ($ nix-channel --update)
+            (with-label :at (now *config*:update-every)))
+
+        ; build!
+        ;
+        ; TODO: it would be really cool to break this up for more fine-grained
+        ; caching, but nix has been pretty resistant to my efforts so far.
+        ;
+        ; * there's a ton of potential with buildkit's new MergeOp/DiffOp
+        ; features, and I spiked on a form that decomposed a derivation into a
+        ; recursive tree of `nix-env -i` thunks, but they just use up all of
+        ; the RAM.
+        ;
+        ; * I also tried using cache mounts, and it worked great at first, but
+        ; it had some wacky failure modes that made it not really worth it IMO.
+        (-> ($ nix-build (./ctx/ nix-file))
+            (with-mount context ./ctx/))
+
+        ; hoist the result out of /nix/store so we can pass it around as a
+        ; regular thunk path
+        ;
+        ; having to cp here is unfortunate, but oh well
+        ($ cp -aL ./result $path))
+
+      path)))

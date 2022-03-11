@@ -1,29 +1,29 @@
 {
   "memo": {
-    "2d1f994e0a8e466595818ce55744edef890a6d45dfea1d1b22987f85e6fec074:resolve": [
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
       {
         "input": [
           {
             "platform": {
               "os": "linux"
             },
-            "repository": "alpine",
+            "repository": "nixos/nix",
             "tag": "latest"
           }
         ],
         "output": {
-          "digest": "sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300",
+          "digest": "sha256:fc55b9bf9f61742a3fc262c0dc9ad62ea8ace014bb5bd4b11341da879e7b26ce",
           "platform": {
             "os": "linux"
           },
-          "repository": "alpine",
+          "repository": "nixos/nix",
           "tag": "latest"
         }
       }
     ]
   },
   "thunks": {
-    "2d1f994e0a8e466595818ce55744edef890a6d45dfea1d1b22987f85e6fec074": {
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=": {
       "cmd": {
         "command": "run"
       }

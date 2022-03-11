@@ -1,5 +1,18 @@
-(defn wget [url filename]
-  (subpath
-    (from (linux/alpine)
-      ($ wget $url -O $filename))
-    filename))
+(provide [wget]
+  (use (*dir*/nix))
+
+  (def image
+    {:oci-archive (nix:build *dir*/img/ ./wget.nix ./image.tar)
+     :platform {:os "linux"}
+     :tag "latest"})
+
+  (defn wget [url filename]
+    (subpath
+      (from image
+        ($ wget $url -O $filename))
+      filename)))
+
+(defn main [url]
+  (-> ($ cat (wget url ./index.html))
+      (with-image (linux/nixos/nix))
+      run))

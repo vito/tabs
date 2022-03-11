@@ -1,10 +1,5 @@
 (provide [cli opts->flags]
-  (use (*dir*/wget))
-
-  (def gh-tgz
-    (wget:wget
-      "https://github.com/cli/cli/releases/download/v2.5.1/gh_2.5.1_linux_amd64.tar.gz"
-      ./gh.tgz))
+  (use (*dir*/nix))
 
   (defn append-flag [fs k v]
     (let [flag (str "--" k)]
@@ -18,5 +13,11 @@
     (reduce-kv append-flag [] opts))
 
   (def cli
-    (from (linux/alpine)
-      ($ tar -vzxf $gh-tgz -C /usr/local --strip-components=1))))
+    {:oci-archive (nix:build *dir*/img/ ./gh.nix ./image.tar)
+     :platform {:os "linux"}
+     :tag "latest"}))
+
+(defn main args
+  (-> ($ gh & $args)
+      (with-image cli)
+      run))
