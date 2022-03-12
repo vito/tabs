@@ -25,7 +25,8 @@
 
         ; daily updates
         (-> ($ nix-channel --update)
-            (with-label :at (now *config*:update-every)))
+            (with-label :at (now *config*:update-every))
+            (with-mount cache-mount /nix/))
 
         ; build with the cache mounted to /nix/ now
         (-> ($ nix-build (./ctx/ nix-file))
