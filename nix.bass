@@ -1,4 +1,4 @@
-(provide [*config* build]
+(provide [*config* build build-flake]
   (use (.time))
 
   ; module configuration
