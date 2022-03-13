@@ -12,33 +12,66 @@
        ; root directory for cache mount
        :cache-root /nix-cache/}))
 
-  (defn build-thunk [context nix-file path]
+  (def cache-mount
     (let [img *config*:nix-image
-          img-path (string->dir img:digest)
-          cache-mount (*config*:cache-root img-path)]
-      (from img
-        ; seed the cache with the initial /nix/ content
-        ;
-        ; (this will itself be cached)
-        (-> ($ cp -afT /nix/ /cache/)
-            (with-mount cache-mount /cache/))
+          img-path (string->dir img:digest)]
+      (*config*:cache-root img-path)))
 
-        ; daily updates
-        (-> ($ nix-channel --update)
-            (with-label :at (now *config*:update-every))
-            (with-mount cache-mount /nix/))
+  (defn build-flake-thunk [thunk path]
+    (from img
+      ; seed the cache with the initial /nix/ content
+      ;
+      ; (this will itself be cached)
+      (-> ($ cp -afT /nix/ /cache/)
+          (with-mount cache-mount /cache/))
 
-        ; build with the cache mounted to /nix/ now
-        (-> ($ nix-build (./ctx/ nix-file))
-            (with-mount context ./ctx/)
-            (with-mount cache-mount /nix/))
+      ; enable flakes
+      ($ sh -c "echo accept-flake-config = true >> /etc/nix/nix.conf")
+      ($ sh -c "echo experimental-features = nix-command flakes >> /etc/nix/nix.conf")
 
-        ; hoist the result out of /nix/store so we can pass it around as a
-        ; regular thunk path
-        ;
-        ; having to cp here is unfortunate, but oh well
-        (-> ($ cp -aL ./result $path)
-            (with-mount cache-mount /nix/)))))
+      ; build with the cache mounted to /nix/ now
+      (-> thunk
+          (with-mount cache-mount /nix/))
+
+      ; hoist the result out of /nix/store so we can pass it around as a
+      ; regular thunk path
+      ;
+      ; having to cp here is unfortunate, but oh well
+      (-> ($ cp -aL ./result $path)
+          (with-mount cache-mount /nix/))))
+
+  ; runs a 'nix build' command and returns ./result as a thunk path
+  ;
+  ; The provided thunk must set up its own mounts and should be pretty precise
+  ; so that it doesn't have to rebuild (e.g. mount flake.lock/flake.nix in
+  ; specifically rather than the entire repo root if it's not needed).
+  (defn build-flake [thunk path]
+    (subpath (build-flake-thunk thunk path) path))
+
+  (defn build-thunk [context nix-file path]
+    (from img
+      ; seed the cache with the initial /nix/ content
+      ;
+      ; (this will itself be cached)
+      (-> ($ cp -afT /nix/ /cache/)
+          (with-mount cache-mount /cache/))
+
+      ; daily updates
+      (-> ($ nix-channel --update)
+          (with-label :at (now *config*:update-every))
+          (with-mount cache-mount /nix/))
+
+      ; build with the cache mounted to /nix/ now
+      (-> ($ nix-build (./ctx/ nix-file))
+          (with-mount context ./ctx/)
+          (with-mount cache-mount /nix/))
+
+      ; hoist the result out of /nix/store so we can pass it around as a
+      ; regular thunk path
+      ;
+      ; having to cp here is unfortunate, but oh well
+      (-> ($ cp -aL ./result $path)
+          (with-mount cache-mount /nix/))))
 
   ; builds nix-file and returns its ./result as a thunk path
   ;
