@@ -25,7 +25,7 @@
       ; seed the cache with the initial /nix/ content
       ;
       ; (this will itself be cached)
-      (-> ($ cp -afT /nix/ /cache/)
+      (-> ($ cp -anT /nix/ /cache/)
           (with-mount cache-mount /cache/))
 
       ; enable flakes
@@ -61,25 +61,25 @@
       ; seed the cache with the initial /nix/ content
       ;
       ; (this will itself be cached)
-      (-> ($ cp -afT /nix/ /cache/)
+      (-> ($ cp -anT /nix/ /cache/)
           (with-mount cache-mount /cache/))
 
       ; daily updates
       (-> ($ nix-channel --update)
           (with-label :at (now *config*:update-every))
-          (with-mount cache-mount /nix/))
+          with-cache)
 
       ; build with the cache mounted to /nix/ now
       (-> ($ nix-build (./ctx/ nix-file))
           (with-mount context ./ctx/)
-          (with-mount cache-mount /nix/))
+          with-cache)
 
       ; hoist the result out of /nix/store so we can pass it around as a
       ; regular thunk path
       ;
       ; having to cp here is unfortunate, but oh well
       (-> ($ cp -aL ./result $path)
-          (with-mount cache-mount /nix/))))
+          with-cache)))
 
   ; builds nix-file and returns its ./result as a thunk path
   ;
