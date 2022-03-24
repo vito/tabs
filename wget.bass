@@ -2,7 +2,7 @@
   (use (*dir*/nix))
 
   (def image
-    {:oci-archive (nix:build *dir*/img/ ./wget.nix ./image.tar)
+    {:file (nix:build *dir*/img/ ./wget.nix ./image.tar)
      :platform {:os "linux"}
      :tag "latest"})
 

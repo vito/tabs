@@ -13,7 +13,7 @@
     (reduce-kv append-flag [] opts))
 
   (def cli
-    {:oci-archive (nix:build *dir*/img/ ./gh.nix ./image.tar)
+    {:file (nix:build *dir*/img/ ./gh.nix ./image.tar)
      :platform {:os "linux"}
      :tag "latest"}))
 
