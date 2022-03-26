@@ -1,6 +1,6 @@
 { pkgs ? import <nixpkgs> { }
 }:
-pkgs.callPackage ./oci.nix {
+pkgs.callPackage ./convertToOci.nix {
   image = pkgs.dockerTools.streamLayeredImage {
     name = "wget";
     contents = with pkgs; [

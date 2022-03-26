@@ -13,7 +13,8 @@
     (reduce-kv append-flag [] opts))
 
   (def cli
-    {:file (nix:build *dir*/img/ ./gh.nix ./image.tar)
+    {:file (nix:result (cd *dir*/img/ ($ nix-build ./gh.nix))
+                       ./image.tar)
      :platform {:os "linux"}
      :tag "latest"}))
 
