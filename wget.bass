@@ -2,7 +2,7 @@
   (use (*dir*/nix))
 
   (def image
-    {:file (nix:result (cd *dir*/img/ ($ nix-build ./wget.nix))
+    {:file (nix:result (cd *dir*/ ($ nix build ".#wget"))
                        ./image.tar)
      :platform {:os "linux"}
      :tag "latest"})
