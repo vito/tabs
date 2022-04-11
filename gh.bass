@@ -31,11 +31,16 @@
 
   (defn append-flag [fs k v]
     (let [flag (str "--" k)]
-      (if (boolean? v)
-        ; for a bool, pass the flag with no val, iff the value is true
+      (cond
+        ; for bool, pass the flag with no val, iff the value is true
+        (boolean? v)
         (if v
           (conj fs flag)
           fs)
+
+        ; for null, don't pass the flag at all
+        (null? v)
+        fs
 
         ; for any other val, pass it along as-is.
         ;
@@ -43,6 +48,7 @@
         ; anything; let the runtime handle it.
         ;
         ; see (str-thunk) to concatenate to a thunk path.
+        :else
         (conj fs flag v)))))
 
 ; returns a module for interacting with a repo's github releases
