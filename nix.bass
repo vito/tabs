@@ -10,8 +10,6 @@
       (next *stdin* {})
       {; base image providing nix
        :nix-image (linux/nixos/nix)
-       ; how often to run nix channel --update
-       :update-every time:day
        ; root directory for cache mount
        :cache-root /nix-cache/}))
 
