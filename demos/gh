@@ -1,6 +1,6 @@
 #!/usr/bin/env bass
 
-(use (*dir*/../gh))
+(use (*dir*/../gh.bass))
 
 (run
   (from gh:cli

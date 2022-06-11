@@ -1,5 +1,5 @@
 (provide [image]
-  (use (*dir*/nix))
+  (use (*dir*/nix.bass))
 
   ; an image with the gh cli installed
   (def image

@@ -1,5 +1,5 @@
 (provide [wget]
-  (use (*dir*/nix))
+  (use (*dir*/nix.bass))
 
   (def image
     {:file (nix:result (cd *dir*/ ($ nix build ".#wget"))
