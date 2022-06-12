@@ -47,7 +47,7 @@
         ; note that v may be a thunk path, so we don't want to stringify it or
         ; anything; let the runtime handle it.
         ;
-        ; see (str-thunk) to concatenate to a thunk path.
+        ; use a list to concatenate values around a thunk path.
         :else
         (conj fs flag v)))))
 
