@@ -53,10 +53,26 @@
 
 ; returns a module for interacting with a repo's github releases
 (defn release [repo token]
-  (module [create! assets]
+  (module [create! upload! edit! assets]
     ; creates a release
     (defn create! [tag assets & kwopts]
       (-> ($ gh release create $tag & $assets)
+          (with-auth token)
+          (with-label :effects true)
+          (with-flags :repo repo & kwopts)
+          read-word))
+
+    ; uploads assets to a release, clobbering any existing assets
+    (defn upload! [tag assets & kwopts]
+      (-> ($ gh release upload --clobber $tag & $assets)
+          (with-auth token)
+          (with-label :effects true)
+          (with-flags :repo repo & kwopts)
+          read-word))
+
+    ; edits a release
+    (defn edit! [tag & kwopts]
+      (-> ($ gh release edit $tag)
           (with-auth token)
           (with-label :effects true)
           (with-flags :repo repo & kwopts)
