@@ -9,18 +9,15 @@
     (merge
       (next *stdin* {})
       {; base image providing nix
-       :nix-image (linux/nixos/nix)
-       ; root directory for cache mount
-       :cache-root /nix-cache/}))
+       :nix-image (linux/nixos/nix)}))
 
   ; attaches the persistent /nix/ cache mount to the thunk
   (defn with-cache [thunk]
     (with-mount thunk cache-mount /nix/))
 
   (def cache-mount
-    (let [img *config*:nix-image
-          img-path (string->dir img:digest)]
-      (*config*:cache-root img-path)))
+    (let [img *config*:nix-image]
+      (cache-dir (str "nix-cache:" img:repository ":" img:tag "@" img:digest))))
 
   ; an image with flakes and nix-command enabled
   (def image
