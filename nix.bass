@@ -7,9 +7,9 @@
   ; module configuration
   (def *config*
     (merge
-      (next *stdin* {})
       {; base image providing nix
-       :nix-image (linux/nixos/nix)}))
+       :nix-image (linux/nixos/nix)}
+      (next *stdin* {})))
 
   ; attaches the persistent /nix/ cache mount to the thunk
   (defn with-cache [thunk]
