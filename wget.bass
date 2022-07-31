@@ -1,11 +1,11 @@
 (provide [wget]
   (use (*dir*/nix.bass))
 
+  (def nixery
+    (nix:nixery *dir*/flake.lock))
+
   (def image
-    {:file (nix:result (cd *dir*/ ($ nix build ".#wget"))
-                       ./image.tar)
-     :platform {:os "linux"}
-     :tag "latest"})
+    (nixery/wget))
 
   (defn wget [url filename]
     (subpath
@@ -14,6 +14,4 @@
       filename)))
 
 (defn main [url]
-  (-> ($ cat (wget url ./index.html))
-      (with-image (linux/nixos/nix))
-      run))
+  (emit (wget url ./index.html) *stdout*))

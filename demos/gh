@@ -1,9 +1,0 @@
-#!/usr/bin/env bass
-
-(use (*dir*/../gh.bass))
-
-(run
-  (from gh:cli
-    ; TODO: anything fancier needs auth, and secrets aren't implemented yet, so
-    ; this isn't much of a demo
-    ($ gh --version)))

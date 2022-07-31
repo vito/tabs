@@ -1,46 +1,46 @@
-memos:  {
-  module:  {
-    cmd:  {
-      command:  {
-        name:  "run"
+memos: {
+  module: {
+    cmd: {
+      command: {
+        name: "run"
       }
     }
   }
-  calls:  {
-    binding:  "resolve"
-    results:  {
-      input:  {
-        array:  {
-          values:  {
-            object:  {
-              bindings:  {
-                symbol:  "platform"
-                value:  {
-                  object:  {
-                    bindings:  {
-                      symbol:  "os"
-                      value:  {
-                        string:  {
-                          value:  "linux"
+  calls: {
+    binding: "resolve"
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
                         }
                       }
                     }
                   }
                 }
               }
-              bindings:  {
-                symbol:  "repository"
-                value:  {
-                  string:  {
-                    value:  "nixos/nix"
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "nixos/nix"
                   }
                 }
               }
-              bindings:  {
-                symbol:  "tag"
-                value:  {
-                  string:  {
-                    value:  "latest"
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
                   }
                 }
               }
@@ -48,44 +48,128 @@ memos:  {
           }
         }
       }
-      output:  {
-        object:  {
-          bindings:  {
-            symbol:  "platform"
-            value:  {
-              object:  {
-                bindings:  {
-                  symbol:  "os"
-                  value:  {
-                    string:  {
-                      value:  "linux"
+      output: {
+        object: {
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
                     }
                   }
                 }
               }
             }
           }
-          bindings:  {
-            symbol:  "repository"
-            value:  {
-              string:  {
-                value:  "nixos/nix"
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "nixos/nix"
               }
             }
           }
-          bindings:  {
-            symbol:  "tag"
-            value:  {
-              string:  {
-                value:  "latest"
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
               }
             }
           }
-          bindings:  {
-            symbol:  "digest"
-            value:  {
-              string:  {
-                value:  "sha256:800bd47a0587a69351155195fb343a8cbf8bda3b08822324419b95ca940aced6"
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:c6c9e6bf8d2d87877ef931bbf5c350d84ac114e33a4abacc3f2e51dcbed25ea1"
+              }
+            }
+          }
+        }
+      }
+    }
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "basslang/nixery"
+                  }
+                }
+              }
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      output: {
+        object: {
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "basslang/nixery"
+              }
+            }
+          }
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
+              }
+            }
+          }
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:aaaed1efa8f4dd10c2021bfb92ad8b510224d2474460426d0263bc955674b717"
               }
             }
           }
