@@ -4,7 +4,7 @@
   (def nixery (nix:nixery *dir*/flake.lock))
 
   ; an image with the gh cli installed
-  (def image (nixery/shell/gh)))
+  (def image (nixery:linux/shell/gh)))
 
 ; returns a thunk with the gh cli auth'd with the given token
 (defn with-auth [thunk token]

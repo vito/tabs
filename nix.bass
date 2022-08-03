@@ -85,10 +85,14 @@
           node (name lock:nodes)]
       node:locked:rev))
 
-  ; starts the nixery server if necessary and returns an image path root
+  ; starts the nixery server if necessary and returns a module
   ;
   ; Takes a path to a flake.lock to read the nixpkgs revision from.
+  ;
+  ; The returned module extends the thunk's (start) module with a :linux path
+  ; root for resolving images using the Nixery registry.
   (defn nixery [flake.lock]
     (let [channel (locked-rev flake.lock :nixpkgs)
-          addrs (serve (nixery-srv channel))]
-      (nixery-resolver {:os "linux"} [addrs:registry]))))
+          server (spawn (nixery-srv channel))]
+      {server
+       :linux (nixery-resolver {:os "linux"} [server:addrs:registry])})))
