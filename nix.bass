@@ -66,11 +66,12 @@
                        :WEB_DIR "/srv/www"
                        :NIXERY_CHANNEL channel})))))
 
-  (defn nixery-resolver [platform names]
+  (defn nixery-resolver [thunk platform names]
     (fn optional
       (case optional
         []
         (resolve {:platform platform
+                  :registry thunk
                   :repository (strings:join "/" names)
                   :tag "latest"})
 
@@ -93,6 +94,6 @@
   ; root for resolving images using the Nixery registry.
   (defn nixery [flake.lock]
     (let [channel (locked-rev flake.lock :nixpkgs)
-          server (spawn (nixery-srv channel))]
-      {server
-       :linux (nixery-resolver {:os "linux"} [server:addrs:registry])})))
+          thunk (nixery-srv channel)
+          server (spawn thunk)]
+      {:linux (nixery-resolver thunk {:os "linux"} [])})))
