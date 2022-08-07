@@ -59,7 +59,7 @@
       (from *config*:nixery-image
         (-> ($ nixery)
             (with-mount storage-cache /var/lib/nixery/)
-            (with-ports {:registry 9110})
+            (with-port :registry 9110)
             (with-env {:NIXERY_STORAGE_BACKEND "filesystem"
                        :STORAGE_PATH "/var/lib/nixery"
                        :PORT "9110"
