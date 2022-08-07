@@ -70,13 +70,13 @@
     (fn optional
       (case optional
         []
-        (resolve {:platform platform
-                  :registry thunk
-                  :repository (strings:join "/" names)
-                  :tag "latest"})
+        (let [repository (str "$host:$port/" (strings:join "/" names))]
+          (resolve {:platform platform
+                    :repository (addr thunk :registry repository)
+                    :tag "latest"}))
 
         [dep]
-        (nixery-resolver platform (conj names (path-name dep)))
+        (nixery-resolver thunk platform (conj names (path-name dep)))
 
         _
         (error "invalid image path segment" :segment optional))))
@@ -94,6 +94,5 @@
   ; root for resolving images using the Nixery registry.
   (defn nixery [flake.lock]
     (let [channel (locked-rev flake.lock :nixpkgs)
-          thunk (nixery-srv channel)
-          server (spawn thunk)]
-      {:linux (nixery-resolver thunk {:os "linux"} [])})))
+          server (nixery-srv channel)]
+      {:linux (nixery-resolver server {:os "linux"} [])})))

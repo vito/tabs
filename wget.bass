@@ -1,11 +1,9 @@
 (provide [wget]
   (use (*dir*/nix.bass))
 
-  (def nixery
-    (nix:nixery *dir*/flake.lock))
+  (def nixery (nix:nixery *dir*/flake.lock))
 
-  (def image
-    (nixery/wget))
+  (def image (nixery:linux/wget))
 
   (defn wget [url filename]
     (subpath
