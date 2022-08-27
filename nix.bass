@@ -12,7 +12,8 @@
      ; image providing nixery
      ;
      ; built via nix-build -A nixery-image in nixery repo
-     :nixery-image (linux/basslang/nixery)})
+     :nixery-image (linux/basslang/nixery)
+     :caddy-image (linux/caddy)})
 
   ; module configuration
   (def *config*
@@ -66,6 +67,15 @@
                        :WEB_DIR "/srv/www"
                        :NIXERY_CHANNEL channel})))))
 
+  (defn https-nixery-srv [channel]
+    (let [srv (nixery-srv channel)]
+      (from *config*:caddy-image
+        (-> ($ caddy run)
+            (with-mount (mkfile ./Caddyfile ":443\ntls /caddy.crt /caddy.key\nreverse_proxy {\n  to {$PROXY_ADDR}\n}\n") ./Caddyfile)
+            (with-env {:PROXY_ADDR (addr srv :registry "$host:$port")})
+            (with-tls /caddy.crt /caddy.key)
+            (with-port :registry 443)))))
+
   (defn nixery-resolver [thunk platform names]
     (fn optional
       (case optional
@@ -94,5 +104,5 @@
   ; root for resolving images using the Nixery registry.
   (defn nixery [flake.lock]
     (let [channel (locked-rev flake.lock :nixpkgs)
-          server (nixery-srv channel)]
+          server (https-nixery-srv channel)]
       {:linux (nixery-resolver server {:os "linux"} [])})))
