@@ -1,7 +1,7 @@
 memos: {
   module: {
-    cmd: {
-      command: {
+    args: {
+      command_path: {
         name: "run"
       }
     }
@@ -51,9 +51,25 @@ memos: {
       output: {
         object: {
           bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "nixos/nix"
+              }
+            }
+          }
+          bindings: {
             symbol: "platform"
             value: {
               object: {
+                bindings: {
+                  symbol: "architecture"
+                  value: {
+                    string: {
+                      value: "amd64"
+                    }
+                  }
+                }
                 bindings: {
                   symbol: "os"
                   value: {
@@ -62,14 +78,6 @@ memos: {
                     }
                   }
                 }
-              }
-            }
-          }
-          bindings: {
-            symbol: "repository"
-            value: {
-              string: {
-                value: "nixos/nix"
               }
             }
           }
@@ -85,7 +93,7 @@ memos: {
             symbol: "digest"
             value: {
               string: {
-                value: "sha256:c6c9e6bf8d2d87877ef931bbf5c350d84ac114e33a4abacc3f2e51dcbed25ea1"
+                value: "sha256:1f8fa57de6f2f9ea5ea8d115b339fa68d2f98f20b59438bdb9d3a082ad64d4bf"
               }
             }
           }
@@ -135,9 +143,25 @@ memos: {
       output: {
         object: {
           bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "basslang/nixery"
+              }
+            }
+          }
+          bindings: {
             symbol: "platform"
             value: {
               object: {
+                bindings: {
+                  symbol: "architecture"
+                  value: {
+                    string: {
+                      value: "amd64"
+                    }
+                  }
+                }
                 bindings: {
                   symbol: "os"
                   value: {
@@ -146,14 +170,6 @@ memos: {
                     }
                   }
                 }
-              }
-            }
-          }
-          bindings: {
-            symbol: "repository"
-            value: {
-              string: {
-                value: "basslang/nixery"
               }
             }
           }
@@ -231,6 +247,14 @@ memos: {
             value: {
               object: {
                 bindings: {
+                  symbol: "architecture"
+                  value: {
+                    string: {
+                      value: "amd64"
+                    }
+                  }
+                }
+                bindings: {
                   symbol: "os"
                   value: {
                     string: {
@@ -253,7 +277,7 @@ memos: {
             symbol: "digest"
             value: {
               string: {
-                value: "sha256:740c1c9e461ea1f8a54d7512b35cd31927c814c86455f71e7e8e0c2b6ee423a2"
+                value: "sha256:e476ebf147a95081e370131c3b64a12810b6980029d445b0d710c2e8c4110ca8"
               }
             }
           }
