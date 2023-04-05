@@ -1,10 +1,14 @@
 (provide [image]
   (use (*dir*/nix.bass))
 
-  (def nixery (nix:nixery *dir*/flake.lock))
-
   ; an image with the gh cli installed
-  (def image (nixery:linux/shell/gh)))
+  (def image
+    {:platform {:os "linux"}
+     :file (nix:result (-> ($ nix build ".#gh")
+                           (with-mount *dir*/img/ ./img/)
+                           (with-mount *dir*/flake.nix ./flake.nix)
+                           (with-mount *dir*/flake.lock ./flake.lock))
+                       ./image.tar)}))
 
 ; returns a thunk with the gh cli auth'd with the given token
 (defn with-auth [thunk token]
