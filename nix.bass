@@ -1,23 +1,28 @@
-(provide [*config* result image with-cache nixery]
+(provide [*config*]
+  ; linux is redefined by this module, so be explicit
+  (def bootstrap-linux
+    linux)
+
+  (def default-config
+    {; image providing nix
+     :nix-image (bootstrap-linux/nixos/nix)
+
+     ; image providing nixery
+     ;
+     ; built via nix-build -A nixery-image in nixery repo
+     :nixery-image (bootstrap-linux/basslang/nixery)
+     :caddy-image (bootstrap-linux/caddy)})
+
+  ; module configuration
+  (def *config*
+    (merge default-config (next *stdin* {}))))
+
+(provide [result image with-cache]
   (use (.time)
        (.strings))
 
   (def *memos*
     *dir*/nix.lock)
-
-  (def default-config
-    {; image providing nix
-     :nix-image (linux/nixos/nix)
-
-     ; image providing nixery
-     ;
-     ; built via nix-build -A nixery-image in nixery repo
-     :nixery-image (linux/basslang/nixery)
-     :caddy-image (linux/caddy)})
-
-  ; module configuration
-  (def *config*
-    (merge default-config (next *stdin* {})))
 
   ; attaches the persistent /nix/ cache mount to the thunk
   (defn with-cache [thunk]
@@ -53,8 +58,70 @@
         ;
         ; having to cp here is unfortunate, but oh well
         (with-cache ($ cp -aL ./result $path)))
-      path))
+      path)))
 
+(provide [linux]
+  (use (.strings))
+
+  (defn derivation [flake-ref name packages]
+    (let [lines ["let"
+            (str "  flake = builtins.getFlake " (json flake-ref) ";")
+                 "  inputs = flake.inputs;"
+                 "  pkgs = import inputs.nixpkgs {};"
+                 "  stream = pkgs.dockerTools.streamLayeredImage {"
+            (str "    name = " (json name) ";")
+            (str "    contents = with pkgs; [" (strings:join " " packages) "];")
+                 "    config = {"
+                 "      Env = ["
+                 "        \"PATH=/bin\""
+                 "        \"SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt\""
+                 "      ];"
+                 "    };"
+                 "  };"
+                 "in"
+                 "pkgs.runCommand \"write-docker-tar\" {} ''"
+                 "  ${stream} > $out"
+                 "''"]]
+      (mkfile ./image.nix (strings:join "\n" lines))))
+
+  (defn build-image [platform flake pkgs]
+    (let [flake-ref (if (path? flake) "/flake" flake-ref)
+          image-name (strings:join "/" (cons "nixpkgs" pkgs))
+          image.nix (derivation flake-ref image-name pkgs)
+          build-cmd (-> ($ nix build -f ./image.nix)
+                        (with-mount image.nix ./image.nix))]
+      {:platform platform
+       :file (result (if (path? flake)
+                       (-> build-cmd (with-mount flake /flake/))
+                       build-cmd)
+                     ./image.tar)}))
+
+  (defn package-resolver [platform pkgs]
+    (fn optional
+      (case optional
+        []
+        (error "must configure :flake, which is a flake path or reference string")
+
+        [pkg-or-opt & args]
+        (cond
+          (path? pkg-or-opt)
+          (package-resolver platform (conj pkgs (path-name pkg-or-opt)))
+
+          (symbol? pkg-or-opt)
+          (let [{:flake flake} (list->scope optional)]
+            (build-image platform flake pkgs))
+
+          :else
+          (error "invalid package resolver argument" :arg pkg-or-opt))
+
+        _
+        (error "invalid image path segment" :segment optional))))
+
+  (def linux
+    (package-resolver {:os "linux"} []))
+  )
+
+(provide [nixery]
   (defn nixery-srv [channel]
     (let [storage-cache (cache-dir "nixery-storage")]
       (from *config*:nixery-image

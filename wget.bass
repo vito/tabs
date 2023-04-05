@@ -1,18 +1,12 @@
 (provide [wget]
   (use (*dir*/nix.bass))
 
-  (def image
-    {:platform {:os "linux"}
-     :file (nix:result (cd *dir*/ ($ nix build ".#wget"))
-                       ./image.tar)})
-
   (defn wget [url filename]
     (subpath
-      (from image
+      (from (nix:linux/wget :flake *dir*)
         ($ wget $url -O $filename))
       filename)))
 
 (defn main [url]
-  (-> ($ cat (wget url ./index.html))
-      (with-image (linux/nixos/nix))
-      run))
+  (write (wget url ./index.html)
+         *dir*/index.html))
