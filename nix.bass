@@ -1,29 +1,16 @@
 (provide [*config*]
-  ; linux is redefined by this module, so be explicit
-  (def bootstrap-linux
-    linux)
+  (def *memos*
+    *dir*/nix.lock)
 
   (def default-config
     {; image providing nix
-     :nix-image (bootstrap-linux/nixos/nix)
-
-     ; image providing nixery
-     ;
-     ; built via nix-build -A nixery-image in nixery repo
-     :nixery-image (bootstrap-linux/basslang/nixery)
-     :caddy-image (bootstrap-linux/caddy)})
+     :nix-image (linux/nixos/nix)})
 
   ; module configuration
   (def *config*
     (merge default-config (next *stdin* {}))))
 
 (provide [result image with-cache]
-  (use (.time)
-       (.strings))
-
-  (def *memos*
-    *dir*/nix.lock)
-
   ; attaches the persistent /nix/ cache mount to the thunk
   (defn with-cache [thunk]
     (with-mount thunk cache-mount /nix/))
@@ -90,25 +77,33 @@
           image.nix (derivation flake-ref image-name pkgs)
           build-cmd (-> ($ nix build -f ./image.nix)
                         (with-mount image.nix ./image.nix))]
-      {:platform platform
-       :file (result (if (path? flake)
-                       (-> build-cmd (with-mount flake /flake/))
-                       build-cmd)
-                     ./image.tar)}))
+      ; return a thunk so folks can with-entrypoint directly
+      (with-image scratch
+        {:platform platform
+         :file (result (if (path? flake)
+                         (-> build-cmd (with-mount flake /flake/))
+                         build-cmd)
+                       ./image.tar)})))
+
+  (def meta-pkgs
+    {:shell ["bashInteractive" "coreutils" "moreutils" "nano"]})
 
   (defn package-resolver [platform pkgs]
-    (fn optional
-      (case optional
+    (fn args
+      (case args
         []
         (error "must configure :flake, which is a flake path or reference string")
 
-        [pkg-or-opt & args]
+        [pkg-or-opt & _]
         (cond
           (path? pkg-or-opt)
-          (package-resolver platform (conj pkgs (path-name pkg-or-opt)))
+          (let [name (path-name pkg-or-opt)
+                sym (string->symbol name)
+                new-pkgs (sym meta-pkgs [name])]
+            (package-resolver platform (concat pkgs new-pkgs)))
 
           (symbol? pkg-or-opt)
-          (let [{:flake flake} (list->scope optional)]
+          (let [{:flake flake} (list->scope args)]
             (build-image platform flake pkgs))
 
           :else
@@ -117,59 +112,8 @@
         _
         (error "invalid image path segment" :segment optional))))
 
+  ; a path root for building images on the fly
+  ;
+  ; Each path segment denotes a package.
   (def linux
-    (package-resolver {:os "linux"} []))
-  )
-
-(provide [nixery]
-  (defn nixery-srv [channel]
-    (let [storage-cache (cache-dir "nixery-storage")]
-      (from *config*:nixery-image
-        (-> ($ nixery)
-            (with-mount storage-cache /var/lib/nixery/)
-            (with-port :registry 9110)
-            (with-env {:NIXERY_STORAGE_BACKEND "filesystem"
-                       :STORAGE_PATH "/var/lib/nixery"
-                       :PORT "9110"
-                       :WEB_DIR "/srv/www"
-                       :NIXERY_CHANNEL channel})))))
-
-  (defn https-nixery-srv [channel]
-    (let [srv (nixery-srv channel)]
-      (from *config*:caddy-image
-        (-> ($ caddy run)
-            (with-mount (mkfile ./Caddyfile ":443\ntls /caddy.crt /caddy.key\nreverse_proxy {\n  to {$PROXY_ADDR}\n}\n") ./Caddyfile)
-            (with-env {:PROXY_ADDR (addr srv :registry "$host:$port")})
-            (with-tls /caddy.crt /caddy.key)
-            (with-port :registry 443)))))
-
-  (defn nixery-resolver [thunk platform names]
-    (fn optional
-      (case optional
-        []
-        (let [repository (str "$host:$port/" (strings:join "/" names))]
-          (resolve {:platform platform
-                    :repository (addr thunk :registry repository)
-                    :tag "latest"}))
-
-        [dep]
-        (nixery-resolver thunk platform (conj names (path-name dep)))
-
-        _
-        (error "invalid image path segment" :segment optional))))
-
-  (defn locked-rev [flake.lock name]
-    (let [lock (next (read flake.lock :json))
-          node (name lock:nodes)]
-      node:locked:rev))
-
-  ; starts the nixery server if necessary and returns a module
-  ;
-  ; Takes a path to a flake.lock to read the nixpkgs revision from.
-  ;
-  ; The returned module extends the thunk's (start) module with a :linux path
-  ; root for resolving images using the Nixery registry.
-  (defn nixery [flake.lock]
-    (let [channel (locked-rev flake.lock :nixpkgs)
-          server (https-nixery-srv channel)]
-      {:linux (nixery-resolver server {:os "linux"} [])})))
+    (package-resolver {:os "linux"} [])))
