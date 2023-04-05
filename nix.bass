@@ -51,13 +51,22 @@
   (use (.strings))
 
   (defn derivation [flake-ref name packages]
-    (let [lines ["let"
+    (let [pkglist (str "with pkgs; [" (strings:join " " packages) "]")
+          lines ["let"
             (str "  flake = builtins.getFlake " (json flake-ref) ";")
                  "  inputs = flake.inputs;"
                  "  pkgs = import inputs.nixpkgs {};"
+                 "  fhs = (pkgs.callPackage <nixpkgs/pkgs/build-support/build-fhs-userenv/env.nix> {}) {"
+                 "    name = \"container-fhs\";"
+            (str "    targetPkgs = pkgs: " pkglist ";")
+                 "    multiPkgs = null;  # Don't include glibc's multilib"
+                 "  };"
                  "  stream = pkgs.dockerTools.streamLayeredImage {"
             (str "    name = " (json name) ";")
-            (str "    contents = with pkgs; [" (strings:join " " packages) "];")
+                 "    contents = pkgs.symlinkJoin {"
+                 "      name = \"contents\";"
+                 "      paths = [ fhs ];"
+                 "    };"
                  "    config = {"
                  "      Env = ["
                  "        \"PATH=/bin\""
