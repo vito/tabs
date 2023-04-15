@@ -10,6 +10,22 @@
   (def *config*
     (merge default-config (next *stdin* {}))))
 
+(defn troubleshoot [tag]
+  (from image
+    (with-cache ($ sh -exc "sleep 1; echo $0 $1; ls -al /nix/*; find /nix/ | wc -l; echo $PATH; which nix; nix --version" (now 0) $tag))))
+
+(defn main []
+  (map (fn [thunk] (start thunk (fn [err] (and err (err)))))
+       [(troubleshoot "1")
+        (troubleshoot "2")
+        (troubleshoot "3")
+        (troubleshoot "4")
+        (troubleshoot "5")
+        (troubleshoot "6")
+        (troubleshoot "7")])
+
+  (wait))
+
 (provide [result image with-cache]
   ; attaches the persistent /nix/ cache mount to the thunk
   (defn with-cache [thunk]
@@ -17,8 +33,8 @@
 
   (def cache-mount
     (let [img *config*:nix-image]
-      (cache-dir (str "nix-cache:" img:repository ":" img:tag "@" img:digest)
-                 :locked)))
+      (cache-dir (eval [str "nix-cache:" :repository ":" :tag "@" :digest]
+                       *config*:nix-image))))
 
   ; an image with flakes and nix-command enabled
   (def image
@@ -26,7 +42,7 @@
       ; seed the cache with the initial /nix/ content
       ;
       ; (this will itself be cached)
-      (with-mount ($ cp -anT /nix/ /cache/) cache-mount /cache/)
+      (with-mount ($ cp -auT /nix/ /cache/) cache-mount /cache/)
 
       ; enable flakes
       (with-cache ($ sh -c "echo accept-flake-config = true >> /etc/nix/nix.conf"))
