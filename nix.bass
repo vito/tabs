@@ -17,7 +17,8 @@
 
   (def cache-mount
     (let [img *config*:nix-image]
-      (cache-dir (str "nix-cache:" img:repository ":" img:tag "@" img:digest))))
+      (cache-dir (str "nix-cache:" img:repository ":" img:tag "@" img:digest)
+                 :private)))
 
   ; an image with flakes and nix-command enabled
   (def image
