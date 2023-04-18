@@ -52,7 +52,7 @@
     (defn create! [tag assets & kwopts]
       (-> ($ gh release create $tag & $assets)
           (with-auth token)
-          (with-label :effects true)
+          (with-env {:NOW (now 0)})
           (with-flags :repo repo & kwopts)
           read-word))
 
@@ -60,7 +60,7 @@
     (defn upload! [tag assets & kwopts]
       (-> ($ gh release upload --clobber $tag & $assets)
           (with-auth token)
-          (with-label :effects true)
+          (with-env {:NOW (now 0)})
           (with-flags :repo repo & kwopts)
           read-word))
 
@@ -68,7 +68,7 @@
     (defn edit! [tag & kwopts]
       (-> ($ gh release edit $tag)
           (with-auth token)
-          (with-label :effects true)
+          (with-env {:NOW (now 0)})
           (with-flags :repo repo & kwopts)
           read-word))
 
