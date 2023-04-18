@@ -104,12 +104,12 @@
           build-cmd (-> ($ nix build -f ./image.nix)
                         (with-mount image.nix ./image.nix))]
       ; return a thunk so folks can with-entrypoint directly
-      (with-image scratch
-        {:platform platform
-         :file (result (if (path? flake)
-                         (-> build-cmd (with-mount flake /flake/))
-                         build-cmd)
-                       ./image.tar)})))
+      (oci-load
+        (result (if (path? flake)
+                  (-> build-cmd (with-mount flake /flake/))
+                  build-cmd)
+                ./gen-image.tar)
+        platform)))
 
   (def meta-pkgs
     {:shell ["bashInteractive" "coreutils" "moreutils" "nano"]})
